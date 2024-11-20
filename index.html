@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tower Defense Game</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+</head>
+<body class="bg-gray-900 text-white">
+<main class="container mx-auto px-4 py-8">
+<h1 class="text-4xl font-bold text-center mb-8">Tower Defense</h1>
+<div id="game" class="mx-auto w-[800px] h-[600px]"></div>
+</main>
+<script>
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    parent: 'game',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 },
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+const game = new Phaser.Game(config);
+
+let path;
+let enemies;
+let turrets;
+let bullets;
+let gold = 100;
+let lives = 10;
+let wave = 1;
+let score = 0;
+let gameState = 'playing';
+
+function preload() {
+    this.load.svg('turret', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTQiIGZpbGw9IiM0QjVGRkYiLz48cmVjdCB4PSIxNCIgeT0iNCIgd2lkdGg9IjQiIGhlaWdodD0iMTYiIGZpbGw9IiMyQjJCMkIiLz48L3N2Zz4=');
+    this.load.svg('enemy', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRkYwMDAwIi8+PC9zdmc+');
+    this.load.svg('bullet', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPjxjaXJjbGUgY3g9IjQiIGN5PSI0IiByPSI0IiBmaWxsPSIjRkZGRjAwIi8+PC9zdmc+');
+}
+
+function create() {
+    path = this.add.path(0, 300);
+    path.lineTo(800, 300);
+
+    enemies = this.physics.add.group();
+    turrets = this.physics.add.group();
+    bullets = this.physics.add.group();
+
+    this.input.on('pointerdown', (pointer) => {
+        if (gold >= 50) {
+            const turret = turrets.create(pointer.x, pointer.y, 'turret');
+            turret.setInteractive();
+            gold -= 50;
+        }
+    });
+
+    this.physics.add.overlap(bullets, enemies, damageEnemy, null, this);
+
+    spawnWave();
+}
+
+function update() {
+    if (gameState === 'playing') {
+        turrets.getChildren().forEach(turret => {
+            const enemy = findNearestEnemy(turret);
+            if (enemy) {
+                shoot(turret, enemy);
+            }
+        });
+
+        bullets.getChildren().forEach(bullet => {
+            const target = bullet.target;
+            if (target.active) {
+                const angle = Phaser.Math.Angle.Between(bullet.x, bullet.y, target.x, target.y);
+                bullet.setVelocity(
+                    Math.cos(angle) * 300,
+                    Math.sin(angle) * 300
+                );
+            } else {
+                bullet.destroy();
+            }
+        });
+    }
+}
+
+function spawnWave() {
+    for (let i = 0; i < wave * 5; i++) {
+        const enemy = enemies.create(0, 300, 'enemy');
+        enemy.health = 3;
+        enemy.setVelocityX(100);
+    }
+    wave++;
+}
+
+function findNearestEnemy(turret) {
+    let nearestEnemy = null;
+    let minDistance = 200;
+
+    enemies.getChildren().forEach(enemy => {
+        const distance = Phaser.Math.Distance.Between(turret.x, turret.y, enemy.x, enemy.y);
+        if (distance < minDistance) {
+            nearestEnemy = enemy;
+            minDistance = distance;
+        }
+    });
+
+    return nearestEnemy;
+}
+
+function shoot(turret, enemy) {
+    if (turret.lastShot && (game.getTime() - turret.lastShot) < 1000) return;
+
+    const bullet = bullets.create(turret.x, turret.y, 'bullet');
+    bullet.target = enemy;
+    turret.lastShot = game.getTime();
+}
+
+function damageEnemy(bullet, enemy) {
+    bullet.destroy();
+    enemy.health--;
+    
+    if (enemy.health <= 0) {
+        enemy.destroy();
+        gold += 10;
+        score += 100;
+        
+        if (enemies.getChildren().length === 0) {
+            spawnWave();
+        }
+    }
+}
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
